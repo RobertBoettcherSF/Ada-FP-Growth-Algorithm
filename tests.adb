@@ -17,7 +17,9 @@ procedure Tests is
       end if;
    end Check;
 
-   function Make_Set (Arr : array (Positive range <>) of Item_Type) return Item_Set is
+   type Item_Array is array (Positive range <>) of Item_Type;
+
+   function Make_Set (Arr : Item_Array) return Item_Set is
       S : Item_Set;
    begin
       for X of Arr loop
@@ -30,8 +32,6 @@ procedure Tests is
    Empty_DB      : Transaction_Database;
    Freqs         : Frequent_Itemset_List;
    Rules         : Association_Rule_List;
-   Expected_Rule : Association_Rule;
-   Test_Set      : Item_Set;
    Found         : Boolean;
    
 begin
