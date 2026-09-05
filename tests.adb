@@ -1,8 +1,11 @@
 pragma Ada_2022;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Containers; use type Ada.Containers.Count_Type;
 with Fp_Growth;   use Fp_Growth;
 
 procedure Tests is
+   use type Item_Sets.Set;
+
    Pass_Count : Natural := 0;
    Fail_Count : Natural := 0;
 
@@ -33,20 +36,21 @@ procedure Tests is
    Freqs         : Frequent_Itemset_List;
    Rules         : Association_Rule_List;
    Found         : Boolean;
+   Hit           : Boolean;
    
 begin
    Put_Line ("--- Starting FP-Growth Test Suite ---");
    
    --  Populate a standard textbook database
-   DB.Append (Make_Set ((1 => 1, 2 => 2, 3 => 5)));
-   DB.Append (Make_Set ((1 => 2, 2 => 4)));
-   DB.Append (Make_Set ((1 => 2, 2 => 3)));
-   DB.Append (Make_Set ((1 => 1, 2 => 2, 3 => 4)));
-   DB.Append (Make_Set ((1 => 1, 2 => 3)));
-   DB.Append (Make_Set ((1 => 2, 2 => 3)));
-   DB.Append (Make_Set ((1 => 1, 2 => 3)));
-   DB.Append (Make_Set ((1 => 1, 2 => 2, 3 => 3, 4 => 5)));
-   DB.Append (Make_Set ((1 => 1, 2 => 2, 3 => 3)));
+   DB.Append (Make_Set ([1 => 1, 2 => 2, 3 => 5]));
+   DB.Append (Make_Set ([1 => 2, 2 => 4]));
+   DB.Append (Make_Set ([1 => 2, 2 => 3]));
+   DB.Append (Make_Set ([1 => 1, 2 => 2, 3 => 4]));
+   DB.Append (Make_Set ([1 => 1, 2 => 3]));
+   DB.Append (Make_Set ([1 => 2, 2 => 3]));
+   DB.Append (Make_Set ([1 => 1, 2 => 3]));
+   DB.Append (Make_Set ([1 => 1, 2 => 2, 3 => 3, 4 => 5]));
+   DB.Append (Make_Set ([1 => 1, 2 => 2, 3 => 3]));
 
    --  TEST 1: Mine Frequent Itemsets
    Put_Line ("TEST 1 - Frequent Itemset Mining (Standard Support)");
@@ -55,7 +59,7 @@ begin
    -- Item 2 appears in 7 transactions
    Found := False;
    for F of Freqs loop
-      if F.Items = Make_Set ((1 => 2)) and then F.Support = 7 then
+      if F.Items = Make_Set ([1 => 2]) and then F.Support = 7 then
          Found := True;
       end if;
    end loop;
@@ -68,7 +72,7 @@ begin
    Check ("2.1 Extracts rules", not Rules.Is_Empty);
    Found := False;
    for R of Rules loop
-      if R.Antecedent = Make_Set ((1 => 5)) and then R.Consequent = Make_Set ((1 => 1, 2 => 2)) then
+      if R.Antecedent = Make_Set ([1 => 5]) and then R.Consequent = Make_Set ([1 => 1, 2 => 2]) then
          Found := True;
       end if;
    end loop;
@@ -88,8 +92,7 @@ begin
 
    --  TEST 4: Empty Database Rejection
    Put_Line ("TEST 4 - Empty Database Edge Case");
-   declare
-      Hit : Boolean := False;
+   Hit := False;
    begin
       Freqs := Mine_Frequent_Itemsets (Empty_DB, 1);
    exception
@@ -101,8 +104,7 @@ begin
 
    --  TEST 5: Invalid Confidence Negative
    Put_Line ("TEST 5 - Invalid Negative Confidence Bound");
-   declare
-      Hit : Boolean := False;
+   Hit := False;
    begin
       Rules := Generate_Association_Rules (Freqs, -0.1);
    exception
@@ -114,8 +116,7 @@ begin
 
    --  TEST 6: Invalid Confidence Positive OOB
    Put_Line ("TEST 6 - Invalid Over-bound Confidence Bounds");
-   declare
-      Hit : Boolean := False;
+   Hit := False;
    begin
       Rules := Mine_Association_Rules (DB, 2, 1.05);
    exception
@@ -130,9 +131,9 @@ begin
    declare
       Dis_DB : Transaction_Database;
    begin
-      Dis_DB.Append (Make_Set ((1 => 1)));
-      Dis_DB.Append (Make_Set ((1 => 2)));
-      Dis_DB.Append (Make_Set ((1 => 3)));
+      Dis_DB.Append (Make_Set ([1 => 1]));
+      Dis_DB.Append (Make_Set ([1 => 2]));
+      Dis_DB.Append (Make_Set ([1 => 3]));
       Freqs := Mine_Frequent_Itemsets (Dis_DB, 2);
       Check ("7.1 Minimum support prevents disconnected matches", Freqs.Is_Empty);
       Check ("7.2 Logic operates on fragmented sets", Dis_DB.Length = 3);
@@ -152,7 +153,7 @@ begin
    declare
       Sing_DB : Transaction_Database;
    begin
-      Sing_DB.Append (Make_Set ((1 => 1, 2 => 2, 3 => 3)));
+      Sing_DB.Append (Make_Set ([1 => 1, 2 => 2, 3 => 3]));
       Freqs := Mine_Frequent_Itemsets (Sing_DB, 1);
       Check ("9.1 Extracted all combinations safely", Freqs.Length = 7);
       Rules := Generate_Association_Rules (Freqs, 1.0);
@@ -190,13 +191,13 @@ begin
       Stress_DB : Transaction_Database;
    begin
       for I in 1 .. 20 loop
-         Stress_DB.Append (Make_Set ((1 => 1, 2 => 2, 3 => I)));
+         Stress_DB.Append (Make_Set ([1 => 1, 2 => 2, 3 => I]));
       end loop;
       Freqs := Mine_Frequent_Itemsets (Stress_DB, 5);
       Check ("12.1 Mined deep associative tree smoothly", not Freqs.Is_Empty);
       Found := False;
       for F of Freqs loop
-         if F.Items = Make_Set ((1 => 1, 2 => 2)) then Found := True; end if;
+         if F.Items = Make_Set ([1 => 1, 2 => 2]) then Found := True; end if;
       end loop;
       Check ("12.2 Found shared root combination", Found);
       Check ("12.3 Completed iteration scaling without crash", True);
@@ -207,7 +208,7 @@ begin
    declare
       Small_Freq : Frequent_Itemset_List;
    begin
-      Small_Freq.Append ((Items => Make_Set ((1 => 1)), Support => 5));
+      Small_Freq.Append (Frequent_Itemset'(Items => Make_Set ([1 => 1]), Support => 5));
       Rules := Generate_Association_Rules (Small_Freq, 0.0);
       Check ("13.1 Single item frequent set skips rule derivation", Rules.Is_Empty);
       Check ("13.2 Memory operations handle minimal sizes safely", True);
