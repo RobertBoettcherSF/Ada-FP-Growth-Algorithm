@@ -88,7 +88,7 @@ package body Fp_Growth is
          return;
       end if;
 
-      for I in 2 .. Positive (Vec.Length) loop
+      for I in 2 .. Natural (Vec.Length) loop
          Temp := Vec.Element (I);
          Freq_I := Freq_Map.Element (Temp).Support;
          J := I - 1;
@@ -187,7 +187,7 @@ package body Fp_Growth is
                   Item       : Item_Type;
                   Node_Val   : FP_Node;
                begin
-                  for I in 1 .. Positive (Filtered.Length) loop
+                  for I in 1 .. Natural (Filtered.Length) loop
                      Item := Filtered.Element (I);
                      Found := False;
                      Child := Tree.Nodes.Element (Curr).First_Child;
@@ -270,7 +270,7 @@ package body Fp_Growth is
          Freqs_Vec.Append (Item_Freq'(Item => Header_Maps.Key (Cursor), Support => Header_Maps.Element (Cursor).Support));
       end loop;
 
-      for I in 2 .. Positive (Freqs_Vec.Length) loop
+      for I in 2 .. Natural (Freqs_Vec.Length) loop
          declare
             Temp : constant Item_Freq := Freqs_Vec.Element (I);
             J    : Natural := I - 1;
