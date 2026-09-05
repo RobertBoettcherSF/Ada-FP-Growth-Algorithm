@@ -26,7 +26,7 @@ procedure Tests is
       S : Item_Set;
    begin
       for X of Arr loop
-         S.Insert (X);
+         S.Include (X);
       end loop;
       return S;
    end Make_Set;
@@ -177,9 +177,9 @@ begin
    declare
       Dup_Set : Item_Set;
    begin
-      Dup_Set.Insert (5);
-      Dup_Set.Insert (5);
-      Dup_Set.Insert (5);
+      Dup_Set.Include (5);
+      Dup_Set.Include (5);
+      Dup_Set.Include (5);
       Check ("11.1 Sets naturally collapse inputs", Dup_Set.Length = 1);
       Check ("11.2 Algorithm prevents internal double counting", True);
       Check ("11.3 Type invariants respected", True);
