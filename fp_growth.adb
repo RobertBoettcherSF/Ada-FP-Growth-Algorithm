@@ -1,4 +1,5 @@
 pragma Ada_2022;
+with Ada.Containers; use type Ada.Containers.Count_Type;
 with Ada.Containers.Ordered_Maps;
 
 package body Fp_Growth is
@@ -266,7 +267,7 @@ package body Fp_Growth is
 
       --  Extract and sort items ascending by support for bottom-up processing.
       for Cursor in Tree.Headers.Iterate loop
-         Freqs_Vec.Append ((Item => Header_Maps.Key (Cursor), Support => Header_Maps.Element (Cursor).Support));
+         Freqs_Vec.Append (Item_Freq'(Item => Header_Maps.Key (Cursor), Support => Header_Maps.Element (Cursor).Support));
       end loop;
 
       for I in 2 .. Positive (Freqs_Vec.Length) loop
@@ -294,7 +295,7 @@ package body Fp_Growth is
             Node_Idx   : Node_Index := Tree.Headers.Element (F.Item).First_Node;
          begin
             New_Prefix.Insert (F.Item);
-            Results.Append ((Items => New_Prefix, Support => F.Support));
+            Results.Append (Frequent_Itemset'(Items => New_Prefix, Support => F.Support));
 
             while Node_Idx /= Null_Index loop
                declare
@@ -308,7 +309,7 @@ package body Fp_Growth is
                   end loop;
 
                   if not Path.Is_Empty then
-                     Cond_Txs.Append ((Items => Path, Count => Path_Count));
+                     Cond_Txs.Append (Internal_Transaction'(Items => Path, Count => Path_Count));
                   end if;
                end;
                Node_Idx := Tree.Nodes.Element (Node_Idx).Next_Homonym;
@@ -386,7 +387,7 @@ package body Fp_Growth is
                   Mask := Mask / 2;
                   Idx := Idx + 1;
                end loop;
-               Subsets.Append ((Items => Subset, Support => 0));
+               Subsets.Append (Frequent_Itemset'(Items => Subset, Support => 0));
             end;
          end loop;
       end;
@@ -423,10 +424,11 @@ package body Fp_Growth is
                         begin
                            if Conf >= Min_Confidence then
                               Rules.Append
-                                ((Antecedent => A,
-                                  Consequent => B,
-                                  Support    => Freq_Set.Support,
-                                  Confidence => Conf));
+                                (Association_Rule'
+                                   (Antecedent => A,
+                                    Consequent => B,
+                                    Support    => Freq_Set.Support,
+                                    Confidence => Conf));
                            end if;
                         end;
                      end if;
